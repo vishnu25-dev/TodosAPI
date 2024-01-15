@@ -7,19 +7,22 @@ import jakarta.servlet.annotation.*;
 import service.TodoService;
 import org.json.JSONObject;
 import utils.JsonUtils;
+import utils.DatabaseUtil;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 
-@WebServlet(value = "/api/todo")
+@WebServlet(value = "/api/todos")
 public class TodoServlet extends HttpServlet{
 
     private final TodoService todoService = new TodoService();
     private JSONObject jsonResponse;
     private JSONObject jsonObject;
 
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
         jsonResponse = new JSONObject();
 
         jsonResponse.put("status","success");
@@ -100,5 +103,16 @@ public class TodoServlet extends HttpServlet{
         errorResponse.put("status", "error");
         errorResponse.put("message", e.getMessage());
         sendResponse(response, errorResponse, HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    public void destroy() {
+        // Clean up resources, such as closing the database connection, when the servlet is destroyed
+        try {
+            if (DatabaseUtil.connection != null && !DatabaseUtil.connection.isClosed()) {
+                DatabaseUtil.closeConnection();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
